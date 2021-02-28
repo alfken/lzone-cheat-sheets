@@ -1,18 +1,24 @@
 Example-wise the jq manpage is not really helpful. Let's document some simple examples here...
 
-To test queries live use [jqplay.org](https://jqplay.org/)
+To test queries live use [jqplay.org](https://jqplay.org/) or simply a local terminal window.
+
+## Premise
+
+Create `my.json` to use in the examples below:
+
+    echo '{"timestamp":1234567890,"report":"AgeReport","results":[{"name":"John Doe","age":43,"city":"TownA"},{"name":"Joe Smith","age":10,"city":"TownB"}]}'>my.json
 
 ## Output Formatting
 
-If you do only care about output formatting (pretty print) run
+If you do only care about output formatting (pretty print) run:
 
     jq . my.json
 
-or when reading from a pipeline
+or when using a pipeline:
 
     cat my.json | jq
 
-Note: for redirection you need to pass a filter too to avoid a syntax error:
+Note - for redirection you need to pass a filter too to avoid a syntax error:
 
     jq . my.json > output.json
 
@@ -24,25 +30,31 @@ Consider this example document
         "timestamp": 1234567890,
         "report": "Age Report",
         "results": [
-            { "name": "John", "age": 43, "city": "TownA" },
-            { "name": "Joe",  "age": 10, "city": "TownB" }
+            { "name": "John Doe", "age": 43, "city": "TownA" },
+            { "name": "Joe Smith",  "age": 10, "city": "TownB" }
         ]
     }
 
-To extract top level attributes "timestamp" and "report"
+To extract top level attributes "timestamp" and "report":
 
-    jq '. | {timestamp,report}'
+    jq '. | {timestamp,report}' my.json
 
-To extract name and age of each "results" item
+To extract name and age of each "results" item:
 
-    jq '.results[] | {name, age}'
+    jq '.results[] | {name, age}' my.json
 
-Filter this by attribute
+Filter by attribute:
 
-    jq '.results[] | select(.name == "John") | {age}'          # Get age for 'John'
-    jq '.results[] | select((.name == "Joe") and (.age = 10))' # Get complete records for all 'Joe' aged 10
-    jq '.results[] | select(.name | contains("Jo"))'           # Get complete records for all names with 'Jo'
-    jq '.results[] | select(.name | test("Joe\s+Smith"))'      # Get complete records for all names matching PCRE regex 'Joe\+Smith'
+    # Get the age of 'John Doe':
+    jq '.results[] | select(.name == "John Doe") | {age}' my.json
+    # Get the complete records for all 'Joe Smith' aged 10:
+    jq '.results[] | select((.name == "Joe Smith") and (.age = 10))' my.json
+    # Get complete records for all names containing 'Jo':
+    jq '.results[] | select(.name | contains("Jo"))' my.json
+    # Same as previous but return as an array:
+    jq '[.results[] | select(.name | contains("Jo"))]' my.json
+    # Get complete records for all names matching PCRE regex 'Joe\+Smith':
+    jq '.results[] | select(.name | test("Joe\\s+Smith"))' my.json
     
 ## "Deep" Value Extraction
 
